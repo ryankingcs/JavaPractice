@@ -1,86 +1,98 @@
-package javapractice;
+package blackJack;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Blackjack {
+    private static Blackjack game;
+    private ArrayList<Person> players;
+    private Deck deck;
 
-	public static void main(String[] args) {
-		
-		java.util.Scanner scanner = new java.util.Scanner(System.in);
-		boolean cont;
-		int balance = 1000;
-		System.out.println("How much would you like to bet?");
-		int wagerAmount = scanner.nextInt();
-		System.out.println("You have placed a bet of " + wagerAmount + " dollars.");
-		balance = balance - wagerAmount; 
-		
-		System.out.println("Type 1 to play.");
-		System.out.println("Type 2 to check balance.");
-		int play = scanner.nextInt();
-		if(play==1) {
-			
-			Random random = new Random();
-			int dealerFirstCard = random.nextInt(10);
-			dealerFirstCard += 1;
-			int dealerSecondCard = random.nextInt(10);
-			dealerSecondCard +=1;
-			int playerFirstCard = random.nextInt(10);
-			playerFirstCard +=1;
-			int playerSecondCard = random.nextInt(10);
-			playerSecondCard +=1;
-			System.out.println("The dealer drew a " + dealerFirstCard + ".");
-			System.out.println("The dealers second card is hidden");
-			System.out.println("");
-			System.out.println("You drew a " + playerFirstCard + ".");
-			System.out.println("You drew a " + playerSecondCard + ".");
-			int playerTotalCards = playerFirstCard + playerSecondCard;
-			int dealerTotalCards = dealerFirstCard + dealerSecondCard; 
-			System.out.println("Your total is " + playerTotalCards + ".");
-			System.out.println("Type 1 to hit.");
-			System.out.println("Type 2 to stand.");
-			int hitOrStand = scanner.nextInt();
-			if(hitOrStand==1) { //hit
-				int playerThirdCard = random.nextInt(10);
-				playerThirdCard +=1;
-				System.out.println("You drew a " + playerThirdCard + ".");
-				playerTotalCards = playerTotalCards + playerThirdCard;
-				System.out.println("Your total is " + playerTotalCards + ".");
-				if(playerTotalCards>=21) {
-					System.out.println("You have went over 21!");
-					System.out.println("You have lost.");
-					balance = balance - wagerAmount;
-					System.out.println("Your new balance is " + balance + ".");
-				
-				}}
-				
-				
-			
-				if(hitOrStand==2) { //stand
-				int dealerThirdCard = random.nextInt(10);
-				dealerThirdCard +=1;
-				System.out.println("The dealers second card is " + dealerSecondCard + ".");
-				System.out.println("The dealer drew a " + dealerThirdCard + ".");
-				dealerTotalCards = dealerTotalCards + dealerThirdCard;
-				if(dealerTotalCards>=21) {
-					System.out.println("The dealer has went over 21!");
-					System.out.println("You have won.");
-					balance = balance + wagerAmount;
-					System.out.println("Your new balance is " + balance + ".");
-				}
-			}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-	
-	}else if(play==2)
+    public Blackjack() {
+        initializeGame();
+        dealCards();
+        takeTurns();
+        declareWinner();
+        playAgain();
+    }
 
-	{
-		System.out.println("Your balance is " + balance + ".");
-	}
-}}
+    public static void main(String[] args) {
+        game = new Blackjack();
+    }
+
+    private void initializeGame() {
+        deck = new Deck();
+        players = new ArrayList<Person>();
+        players.add(new Player());
+        players.add(new Dealer());
+
+        System.out.println("Welcome to a new Blackjack game!");
+    }
+
+    private void dealCards() {
+        for (Person player : players) {
+            deck.dealInitialCards(player);
+            player.printCards(player.getName().equals("You"));
+        }
+    }
+
+    private void takeTurns() {
+        for (Person player: players) {
+            boolean endOfTurn = false;
+            while(!endOfTurn) {
+                player.printCards(true);
+                boolean hit = player.wantToHit();
+                if (hit) {
+                    deck.dealCard(player);
+                    System.out.println(player.getName() + " drew a card.\n");
+                    if (player.getTotal() > 21) {
+                        endOfTurn = true;
+                        System.out.println(player.getName() + " died.\n");
+                    }
+                } else {
+                    endOfTurn = true;
+                    System.out.println(player.getName() + " stayed.\n");
+                }
+            }
+        }
+    }
+
+    private void declareWinner() {
+        byte highest = -1;
+        byte topPlayer = -1;
+        for (byte i = 0; i < players.size(); i++) {
+            String name = players.get(i).getName();
+            byte total = players.get(i).getTotal();
+
+            System.out.println(name + (name.equals("You") ? " have " : " has ") + "a total of " + total + ".");
+
+            if (total > highest && total <= 21) {
+                highest = total;
+                topPlayer = i;
+            }
+            if (total == highest && name.equals("The dealer")) {
+                topPlayer = i;
+            }
+        }
+        if (topPlayer == -1) {
+            System.out.println("Everyone is dead. Nobody wins.");
+        } else {
+            System.out.println(players.get(topPlayer).getName() + " wins!");
+        }
+    }
+
+    private void playAgain() {
+        System.out.print("\nPlay again? \"y\" / \"n\": ");
+        Scanner keyboard = new Scanner(System.in);
+        while(true) {
+            String input = keyboard.next();
+            if (input.equals("y")) {
+                game = new Blackjack();
+            } else if (input.equals("n")) {
+                System.exit(0);
+            } else {
+                System.out.print("Please type \"y\" or \"n\": ");
+            }
+        }
+    }
+}
