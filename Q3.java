@@ -8,10 +8,11 @@ import java.io.IOException;
 public class Q3 {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		
 		int number = 2;
 		int[][] twodArray = new int[4][4];
 		int total = 0;
+		
 
 		for (int rowCounter = 0; rowCounter < 4; rowCounter++) {
 
